@@ -1,10 +1,8 @@
 import sys
 import os
-import mimetypes
 
 from PySide2.QtWidgets import QApplication, QLabel, QListWidget, QListWidgetItem
 from PySide2.QtGui import QIcon, QImage, QPixmap
-from PIL import ImageQt
 
 from icon import get_icon
 
@@ -17,27 +15,6 @@ def main():
 	print(files)
 	print(dirpath)
 
-	# if not os.path.isdir('temp'):
-	# 	os.makedirs('temp')
-	# TODO: possibly name icon files after mimetypes stripping /
-	# and assign icons accordingly
-	# icon_paths = []
-	# test_mimetype = []
-
-	# if len(files) > 0:
-	# 	temp_files = []
-	# 	for i in range(len(files)):
-	# 		temp_files.append(os.path.join(dirpath, files[i]))
-	# 	# for f in temp_files:
-	# 	# 	get_icon = (f, 'large')
-	# 		# test_mimetype.append(mimetypes.guess_type(f))
-	
-	# print(test_mimetype)
-
-	# if len(dirs) > 0:
-	# 	for i in range(len(dirs)):
-	# 		temp_dirs[i] = os.path.join(dirpath, dirs[i])
-
 	dir_icons = []
 	file_icons = []
 
@@ -47,8 +24,6 @@ def main():
 	if len(dirs) > 0:
 		for i in range(len(dirs)):
 			dirs[i] = QListWidgetItem(QIcon(convert_to_icon(os.path.join(dirpath, dirs[i]))), dirs[i])
-
-	print(dirs)
 
 	if len(dirs) > 0:
 		for d in dirs:
