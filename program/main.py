@@ -20,7 +20,9 @@ class Window(QWidget):
 
 		self.show()
 
+
 	def create_layout(self):
+		'''Draw a frame* with current directory on top and 2* lists inside.'''
 		path = 'F:\\_patreon\\browser-test'
 
 		self.group = QGroupBox(path)
@@ -46,6 +48,11 @@ class Window(QWidget):
 		self.group.setLayout(hbox)
 
 	def create_file_list(self, path, selected = None):
+		'''Return a file list with objects populated from files/dirs in given path.
+
+		path -- path of directory to create list elements
+		selected -- name of the cwd to select in parent list
+		'''
 		file_list = QListWidget(self)
 		if not path: # if empty
 			return file_list
@@ -82,7 +89,7 @@ class Window(QWidget):
 	# TODO: add a left list for parent, right list for child, check if those positions exist first
 
 def convert_to_icon(path):
-	'''Convert Image to QPixmap, which could be used in QIcon()
+	'''Convert Image to QPixmap, which could be used in QIcon().
 	
 	path -- file/dir path to get the icon image of
 	'''
@@ -93,13 +100,17 @@ def convert_to_icon(path):
 	return QPixmap.fromImage(qim)
 
 def get_files(path):
+	'''Return a list of filenames, dirnames and path information to those.
+	
+	path -- path to the directory of files/directories that gets returned
+	'''
 	f = []
 	d = []
 	dp = ''
 	for (dirpath, dirnames, filenames) in os.walk(path):
 		f.extend(filenames)
 		d.extend(dirnames)
-		dp = dirpath
+		dp = dirpath # FIXME: this is useless because path arg is already dirpath?
 		break
 	return f, d, dp
 
