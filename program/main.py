@@ -90,7 +90,10 @@ class Window(QWidget):
 	# TODO: add a left list for parent, right list for child, check if those positions exist first
 
 	# TODO: keep a cache of contents of 5-10 directories in path: content dictionary arrays and check in maybe get_files() to see if they exist before reading again.
-	# is this a good structure for one array element? {'path+dir': [dirs], 'path+files': [files], 'path+dp': 'dirpath'}
+	# is this a good structure for one array element? [{'dir': [dirs], 'files': [files], 'path': 'dirpath'}, {...}]
+	# right, why even name them 'path+dir' and 'path+files' when it already has 'path+dp' to represent 'path'
+	# but how to check if it exists in dictionary before re-creating dictionary before checking? (i.e. dict in path_list)
+	# maybe have a dictionary array and a path array?
 
 def convert_to_icon(path):
 	'''Convert Image to QPixmap, which could be used in QIcon().
