@@ -88,6 +88,7 @@ class Window(QWidget):
 
 	# TODO: double click or right arrow action to go into that dir
 	# TODO: add a left list for parent, right list for child, check if those positions exist first
+	# TODO: either no child directory panel or use 4th panel for preview of text files' contents and image/video previews
 
 	# TODO: keep a cache of contents of 5-10 directories in path: content dictionary arrays and check in maybe get_files() to see if they exist before reading again.
 	# is this a good structure for one array element? [{'dir': [dirs], 'files': [files], 'path': 'dirpath'}, {...}]
