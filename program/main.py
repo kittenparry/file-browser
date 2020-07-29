@@ -17,6 +17,7 @@ class Window(QWidget):
 		vbox = QVBoxLayout()
 		vbox.addWidget(self.group)
 		self.setLayout(vbox)
+		# self.group.setTitle('test')
 
 		self.show()
 
@@ -87,6 +88,9 @@ class Window(QWidget):
 
 	# TODO: double click or right arrow action to go into that dir
 	# TODO: add a left list for parent, right list for child, check if those positions exist first
+
+	# TODO: keep a cache of contents of 5-10 directories in path: content dictionary arrays and check in maybe get_files() to see if they exist before reading again.
+	# is this a good structure for one array element? {'path+dir': [dirs], 'path+files': [files], 'path+dp': 'dirpath'}
 
 def convert_to_icon(path):
 	'''Convert Image to QPixmap, which could be used in QIcon().
