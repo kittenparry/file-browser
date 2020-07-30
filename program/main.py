@@ -2,6 +2,8 @@ import sys
 import os
 import mimetypes
 import re
+import string
+import platform
 
 from PySide2.QtWidgets import QApplication, QWidget, QLabel, QListWidget, QListWidgetItem, QHBoxLayout, QVBoxLayout, QGroupBox
 from PySide2.QtGui import QIcon, QImage, QPixmap, QFont
@@ -14,6 +16,10 @@ class Window(QWidget):
 		super().__init__()
 
 		self.cached_dirs = []
+		if platform.system() == 'Windows':
+			self.drives = ['%s:\\' % d for d in string.ascii_uppercase if os.path.exists('%s:\\' % d)]
+		else:
+			self.drives = []
 
 		self.setWindowTitle('file-browser')
 		self.setGeometry(200, 200, 800, 600)
@@ -149,7 +155,11 @@ class Window(QWidget):
 		if not path and not update_list: # if empty
 			return file_list
 		elif not path and update_list:
-			update_list.addItem(QListWidgetItem('((root))'))
+			if len(self.drives) > 0:
+				for letter in self.drives:
+					update_list.addItem(QListWidgetItem(letter))
+			else:
+				update_list.addItem(QListWidgetItem('((root))'))
 			return
 
 		# cache read contents of path to save some time and processing power?
