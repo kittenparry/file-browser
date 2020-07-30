@@ -1,5 +1,6 @@
 import sys
 import os
+import mimetypes
 
 from PySide2.QtWidgets import QApplication, QWidget, QLabel, QListWidget, QListWidgetItem, QHBoxLayout, QVBoxLayout, QGroupBox
 from PySide2.QtGui import QIcon, QImage, QPixmap, QFont
@@ -12,11 +13,9 @@ class Window(QWidget):
 		super().__init__()
 
 		self.cached_dirs = []
-		# temp test already read directory
-		self.cached_dirs.append({'path': 'F:\\_patreon\\browser-test', 'dirs': ['albums', 'videos'], 'files': ['4.jpg']})
 
 		self.setWindowTitle('file-browser')
-		self.setGeometry(200, 200, 640, 480)
+		self.setGeometry(200, 200, 800, 600)
 
 		self.create_layout()
 		vbox = QVBoxLayout()
@@ -43,15 +42,25 @@ class Window(QWidget):
 		except Exception as e:
 			self.left_list = self.create_file_list('')
 			print(e)
-		self.left_list.setMinimumSize(200, 300)
+		self.left_list.setMinimumSize(self.width() / 3, 300)
 		hbox.addWidget(self.left_list)
 
 		try:
 			self.mid_list = self.create_file_list(path)
 		except Exception as e:
 			print(e)
-		self.mid_list.setMinimumSize(200, 300)
+		self.mid_list.setMinimumSize(self.width() / 3, 300)
 		hbox.addWidget(self.mid_list)
+
+		# FIXME: label's place gets filled by others when in a different window size
+		self.right_panel = QLabel()
+		self.right_panel.setMinimumSize(self.width() / 3, 300)
+		picture = QPixmap('F:\\_patreon\\browser-test\\4.jpg')
+		# FIXME: reset on resize
+		picture = picture.scaled(int(self.width() / 3), int(self.height() / 3), QtCore.Qt.KeepAspectRatio)
+		self.right_panel.setPixmap(picture)
+		hbox.addWidget(self.right_panel)
+
 
 		self.left_list.itemDoubleClicked.connect(self.item_click)
 		self.mid_list.itemDoubleClicked.connect(self.item_click)
@@ -72,10 +81,25 @@ class Window(QWidget):
 		
 		item -- clicked QListWidgetItem
 		'''
-		print(item, str(item.text()))
+		print(item, str(item.text()), str(mimetypes.guess_type(item.text())))
+		print(mimetypes.guess_type(item.text())[0])
 		# TODO: probably use a better method
 		if str(item.text()) == '((empty))' or str(item.text()) == '((root))':
 			return
+		
+		# TODO: possibly display preview on one click and open the image in preferred image software on double.
+		guess = mimetypes.guess_type(item.text())[0]
+		if guess: # if not None, e.g. directory
+			if 'image' in mimetypes.guess_type(item.text())[0]:
+				picture = QPixmap(os.path.join(self.group.title(), str(item.text())))
+				picture = picture.scaledToWidth(int(self.width() / 3))
+				self.right_panel.setPixmap(picture)
+				return
+
+		# dummy = QPixmap().scaledToWidth(int(self.width() / 3))
+		self.right_panel.setPixmap(QPixmap())
+
+		# FIXME: changing image currently doesn't work if it's clicked from left list, because of how path is retrieved (e.g. from group.title())
 		path = self.group.title()
 		if item.listWidget() == self.mid_list:
 			path = os.path.join(path, str(item.text()))
