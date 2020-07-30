@@ -157,7 +157,11 @@ class Window(QWidget):
 		elif not path and update_list:
 			if len(self.drives) > 0:
 				for letter in self.drives:
-					update_list.addItem(QListWidgetItem(letter))
+					try:
+						icon = QIcon(convert_to_icon(letter))
+					except Exception as e:
+						print(e)
+					update_list.addItem(QListWidgetItem(icon, letter))
 			else:
 				update_list.addItem(QListWidgetItem('((root))'))
 			return
