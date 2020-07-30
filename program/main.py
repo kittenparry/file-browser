@@ -1,6 +1,7 @@
 import sys
 import os
 import mimetypes
+import re
 
 from PySide2.QtWidgets import QApplication, QWidget, QLabel, QListWidget, QListWidgetItem, QHBoxLayout, QVBoxLayout, QGroupBox
 from PySide2.QtGui import QIcon, QImage, QPixmap, QFont
@@ -241,7 +242,13 @@ def get_files(path):
 		d.extend(dirnames)
 		dp = dirpath # FIXME: this is useless because path arg is already dirpath?
 		break
+	f = sorted(f, key = natural_sort_key)
+	d = sorted(d, key = natural_sort_key)
 	return f, d, dp
+
+# src: https://stackoverflow.com/a/16090640/4085881
+def natural_sort_key(s, _nsre=re.compile('([0-9]+)')):
+	return [int(text) if text.isdigit() else text.lower() for text in _nsre.split(s)]
 
 
 if __name__ == '__main__':
