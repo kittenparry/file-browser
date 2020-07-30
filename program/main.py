@@ -91,15 +91,18 @@ class Window(QWidget):
 		guess = mimetypes.guess_type(item.text())[0]
 		if guess: # if not None, e.g. directory
 			if 'image' in mimetypes.guess_type(item.text())[0]:
-				picture = QPixmap(os.path.join(self.group.title(), str(item.text())))
+				if item.listWidget() == self.mid_list:
+					path = self.group.title()
+				elif item.listWidget() == self.left_list:
+					# TODO: likely navigate one level above if it's on the left list
+					path = os.path.abspath(os.path.join(self.group.title(), '..'))
+				picture = QPixmap(os.path.join(path, str(item.text())))
 				picture = picture.scaledToWidth(int(self.width() / 3))
 				self.right_panel.setPixmap(picture)
 				return
 
-		# dummy = QPixmap().scaledToWidth(int(self.width() / 3))
 		self.right_panel.setPixmap(QPixmap())
 
-		# FIXME: changing image currently doesn't work if it's clicked from left list, because of how path is retrieved (e.g. from group.title())
 		path = self.group.title()
 		if item.listWidget() == self.mid_list:
 			path = os.path.join(path, str(item.text()))
