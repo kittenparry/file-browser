@@ -110,7 +110,7 @@ class Window(QWidget):
 		path -- path of directory to create list elements
 		selected -- name of the cwd to select in parent list
 		up -- create a link to one level up
-		update_list -- update the given list with new path elements rather than returning a new list
+		update_list -- (QListWidget) update the given list with new path elements rather than returning a new list
 		'''
 		if not update_list:
 			file_list = QListWidget(self)
@@ -122,9 +122,10 @@ class Window(QWidget):
 			return file_list
 		elif not path and update_list:
 			update_list.addItem(QListWidgetItem('((root))'))
-			return # TODO: maybe some sort of indication this is root or something?
+			return
 
-		# cache read contents of path to save some time?
+		# cache read contents of path to save some time and processing power?
+		# TODO: could maybe also save actual QListWIdgetItems? to save on Icon creation time
 		if not any(c['path'] == path for c in self.cached_dirs):
 			files, dirs, dirpath = get_files(path)
 			cache = {'path': dirpath, 'dirs': dirs.copy(), 'files': files.copy()}
@@ -139,7 +140,6 @@ class Window(QWidget):
 
 		if up:
 			dirs.insert(0, os.path.abspath(os.path.join(path)))
-			# dirs.insert(0, '..')
 
 		selected_index = -1
 		if len(files) > 0:
