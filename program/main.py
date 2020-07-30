@@ -51,26 +51,24 @@ class Window(QWidget):
 		self.mid_list.setMinimumSize(200, 300)
 		hbox.addWidget(self.mid_list)
 
-		self.left_list.itemDoubleClicked.connect(self.left_list_click)
-		self.mid_list.itemDoubleClicked.connect(self.mid_list_click)
+		self.left_list.itemDoubleClicked.connect(self.item_click)
+		self.mid_list.itemDoubleClicked.connect(self.item_click)
 
 		self.group.setLayout(hbox)
 
-	def left_list_click(self, item):
-		self.item_click(item, 'left')
-
-	def mid_list_click(self, item):
-		self.item_click(item, 'mid')
-
-	def item_click(self, item, side):
+	def item_click(self, item):
+		'''Navigate to a new directory when clicked on a list.
+		
+		item -- clicked QListWidgetItem
+		'''
 		print(item, str(item.text()))
 		# TODO: probably use a better method
 		if str(item.text()) == '((empty))' or str(item.text()) == '((root))':
 			return
 		path = self.group.title()
-		if side == 'mid':
+		if item.listWidget() == self.mid_list:
 			path = os.path.join(path, str(item.text()))
-		elif side == 'left':
+		elif item.listWidget() == self.left_list:
 			if item.text() == '..':
 				add = ''
 			else:
@@ -80,6 +78,10 @@ class Window(QWidget):
 		self.update_file_lists(path)
 
 	def update_file_lists(self, path):
+		'''Re-populate file lists with given new path.
+		
+		path -- new path to get items of the lists
+		'''
 		left_path = os.path.abspath(os.path.join(path, '..'))
 		up_check = False if left_path == path else True
 		try:
@@ -119,18 +121,11 @@ class Window(QWidget):
 			# dirs cache limit
 			if len(self.cached_dirs) > 15:
 				del self.cached_dirs[0]
-			print('---')
-			for c in self.cached_dirs:
-				print(c['path'])
-			print('---')
-			print('new')
 		else:
 			for c in self.cached_dirs:
 				if c['path'] == path:
 					files, dirs, dirpath = c['files'].copy(), c['dirs'].copy(), c['path']
-					print('cached')
-		
-		print(files, dirs, dirpath)
+
 		if up:
 			dirs.insert(0, os.path.abspath(os.path.join(path)))
 			# dirs.insert(0, '..')
