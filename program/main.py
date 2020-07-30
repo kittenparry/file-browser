@@ -3,6 +3,7 @@ import os
 
 from PySide2.QtWidgets import QApplication, QWidget, QLabel, QListWidget, QListWidgetItem, QHBoxLayout, QVBoxLayout, QGroupBox
 from PySide2.QtGui import QIcon, QImage, QPixmap, QFont
+from PySide2 import QtCore
 
 from icon import get_icon
 
@@ -21,6 +22,7 @@ class Window(QWidget):
 		vbox = QVBoxLayout()
 		vbox.addWidget(self.group)
 		self.setLayout(vbox)
+		self.mid_list.setFocus()
 
 		self.show()
 
@@ -55,6 +57,15 @@ class Window(QWidget):
 		self.mid_list.itemDoubleClicked.connect(self.item_click)
 
 		self.group.setLayout(hbox)
+
+	def keyPressEvent(self, event):
+		if event.key() == QtCore.Qt.Key_Left:
+			print('left key')
+			# FIXME: requires double left click for whatever reason
+			self.item_click(self.left_list.item(0))
+		elif event.key() == QtCore.Qt.Key_Right or event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
+			print('right key or enter')
+		return super().keyPressEvent(event)
 
 	def item_click(self, item):
 		'''Navigate to a new directory when clicked on a list.
@@ -166,6 +177,8 @@ class Window(QWidget):
 		if selected_index >= 0:
 			file_list.item(selected_index).setSelected(True)
 			file_list.scrollToItem(file_list.item(selected_index))
+		else:
+			file_list.item(0).setSelected(True)
 
 		if update_list:
 			return
