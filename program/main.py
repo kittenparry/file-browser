@@ -10,6 +10,10 @@ class Window(QWidget):
 	def __init__(self):
 		super().__init__()
 
+		self.cached_dirs = []
+		# temp test already read directory
+		self.cached_dirs.append({'path': 'F:\\_patreon\\browser-test', 'dirs': ['albums', 'videos'], 'files': ['4.jpg']})
+
 		self.setWindowTitle('file-browser')
 		self.setGeometry(200, 200, 640, 480)
 
@@ -17,7 +21,6 @@ class Window(QWidget):
 		vbox = QVBoxLayout()
 		vbox.addWidget(self.group)
 		self.setLayout(vbox)
-		# self.group.setTitle('test')
 
 		self.show()
 
@@ -26,52 +29,134 @@ class Window(QWidget):
 		'''Draw a frame* with current directory on top and 2* lists inside.'''
 		path = 'F:\\_patreon\\browser-test'
 
+		# FIXME: set a max character limit for group text and crop it from left
+		# otherwise it changes the size of the window
 		self.group = QGroupBox(path)
 		self.group.setFont(QFont('Sanserif', 14))
 
 		hbox = QHBoxLayout()
 
 		try:
-			left_list = self.create_file_list(os.path.abspath(os.path.join(path, '..')), os.path.basename(path))
+			self.left_list = self.create_file_list(os.path.abspath(os.path.join(path, '..')), os.path.basename(path), True)
 		except Exception as e:
-			left_list = self.create_file_list('')
+			self.left_list = self.create_file_list('')
 			print(e)
-		left_list.setMinimumSize(100, 100)
-		hbox.addWidget(left_list)
+		self.left_list.setMinimumSize(200, 300)
+		hbox.addWidget(self.left_list)
 
 		try:
-			mid_list = self.create_file_list(path)
+			self.mid_list = self.create_file_list(path)
 		except Exception as e:
 			print(e)
-		mid_list.setMinimumSize(100, 100)
-		hbox.addWidget(mid_list)
+		self.mid_list.setMinimumSize(200, 300)
+		hbox.addWidget(self.mid_list)
+
+		self.left_list.itemDoubleClicked.connect(self.left_list_click)
+		self.mid_list.itemDoubleClicked.connect(self.mid_list_click)
 
 		self.group.setLayout(hbox)
 
-	def create_file_list(self, path, selected = None):
+	def left_list_click(self, item):
+		self.item_click(item, 'left')
+
+	def mid_list_click(self, item):
+		self.item_click(item, 'mid')
+
+	def item_click(self, item, side):
+		print(item, str(item.text()))
+		# TODO: probably use a better method
+		if str(item.text()) == '((empty))' or str(item.text()) == '((root))':
+			return
+		path = self.group.title()
+		if side == 'mid':
+			path = os.path.join(path, str(item.text()))
+		elif side == 'left':
+			if item.text() == '..':
+				add = ''
+			else:
+				add = str(item.text())
+			path = os.path.abspath(os.path.join(path, '..', add))
+		self.group.setTitle(path)
+		self.update_file_lists(path)
+
+	def update_file_lists(self, path):
+		left_path = os.path.abspath(os.path.join(path, '..'))
+		up_check = False if left_path == path else True
+		try:
+			if up_check:
+				self.create_file_list(left_path, os.path.basename(path), up_check, self.left_list)
+			else:
+				self.create_file_list('', update_list = self.left_list)
+		except Exception as e:
+			print(e)
+		self.create_file_list(path, update_list = self.mid_list)
+
+	def create_file_list(self, path, selected = None, up = False, update_list = None):
 		'''Return a file list with objects populated from files/dirs in given path.
 
 		path -- path of directory to create list elements
 		selected -- name of the cwd to select in parent list
+		up -- create a link to one level up
+		update_list -- update the given list with new path elements rather than returning a new list
 		'''
-		file_list = QListWidget(self)
-		if not path: # if empty
+		if not update_list:
+			file_list = QListWidget(self)
+		else:
+			update_list.clear()
+			file_list = update_list
+
+		if not path and not update_list: # if empty
 			return file_list
+		elif not path and update_list:
+			update_list.addItem(QListWidgetItem('((root))'))
+			return # TODO: maybe some sort of indication this is root or something?
 
-		files, dirs, dirpath = get_files(path)
-
-		dir_icons = []
-		file_icons = []
+		# cache read contents of path to save some time?
+		if not any(c['path'] == path for c in self.cached_dirs):
+			files, dirs, dirpath = get_files(path)
+			cache = {'path': dirpath, 'dirs': dirs.copy(), 'files': files.copy()}
+			self.cached_dirs.append(cache)
+			# dirs cache limit
+			if len(self.cached_dirs) > 15:
+				del self.cached_dirs[0]
+			print('---')
+			for c in self.cached_dirs:
+				print(c['path'])
+			print('---')
+			print('new')
+		else:
+			for c in self.cached_dirs:
+				if c['path'] == path:
+					files, dirs, dirpath = c['files'].copy(), c['dirs'].copy(), c['path']
+					print('cached')
+		
+		print(files, dirs, dirpath)
+		if up:
+			dirs.insert(0, os.path.abspath(os.path.join(path)))
+			# dirs.insert(0, '..')
 
 		selected_index = -1
 		if len(files) > 0:
 			for i in range(len(files)):
-				files[i] = QListWidgetItem(QIcon(convert_to_icon(os.path.join(dirpath, files[i]))), files[i])
+				try:
+					icon = QIcon(convert_to_icon(os.path.join(dirpath, files[i])))
+				except Exception as e:
+					print(e)
+					icon = QIcon()
+				files[i] = QListWidgetItem(icon, files[i])
 		if len(dirs) > 0:
 			for i in range(len(dirs)):
 				if dirs[i] == selected:
 					selected_index = i
-				dirs[i] = QListWidgetItem(QIcon(convert_to_icon(os.path.join(dirpath, dirs[i]))), dirs[i])
+				try:
+					icon = QIcon(convert_to_icon(os.path.abspath(os.path.join(dirpath, dirs[i]))))
+				except Exception as e:
+					print(e)
+					icon = QIcon()
+				dirs[i] = QListWidgetItem(icon, dirs[i])
+
+		if up:
+			dirs[0].setText('..')
 
 		if len(dirs) > 0:
 			for d in dirs:
@@ -80,9 +165,15 @@ class Window(QWidget):
 			for f in files:
 				file_list.addItem(f)
 		
+		if len(dirs) == 0 and len(files) == 0:
+			file_list.addItem(QListWidgetItem('((empty))'))
+		
 		if selected_index >= 0:
 			file_list.item(selected_index).setSelected(True)
+			file_list.scrollToItem(file_list.item(selected_index))
 
+		if update_list:
+			return
 		return file_list
 
 
@@ -90,12 +181,6 @@ class Window(QWidget):
 	# TODO: add a left list for parent, right list for child, check if those positions exist first
 	# TODO: either no child directory panel or use 4th panel for preview of text files' contents and image/video previews
 
-	# TODO: keep a cache of contents of 5-10 directories in path: content dictionary arrays and check in maybe get_files() to see if they exist before reading again.
-	# is this a good structure for one array element? [{'dir': [dirs], 'files': [files], 'path': 'dirpath'}, {...}]
-	# right, why even name them 'path+dir' and 'path+files' when it already has 'path+dp' to represent 'path'
-	# but how to check if it exists in dictionary before re-creating dictionary before checking? (i.e. dict in path_list)
-	# maybe have a dictionary array and a path array?
-	# https://stackoverflow.com/a/3897516/4085881
 
 def convert_to_icon(path):
 	'''Convert Image to QPixmap, which could be used in QIcon().
