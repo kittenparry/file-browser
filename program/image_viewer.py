@@ -2,6 +2,7 @@ import sys
 
 from PySide2.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QScrollArea
 from PySide2.QtGui import QIcon, QImage, QPixmap, QFont
+from PySide2 import QtCore
 
 class Window(QWidget):
 	def __init__(self):
@@ -26,6 +27,7 @@ class Window(QWidget):
 
 		self.image_scroll = QScrollArea()
 		self.image_scroll.setWidget(self.image)
+		self.image_scroll.setAlignment(QtCore.Qt.AlignCenter)
 
 		vbox = QVBoxLayout()
 
