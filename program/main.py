@@ -262,9 +262,10 @@ class Window(QWidget):
 		'''Launch secondary image viewing window.'''
 		print(self.image_window)
 		if 'self.image_window' in globals():
-			return
-		self.image_window = image_viewer.Window()
-		print(self.image_window)
+			self.image_window.show()
+		else:
+			self.image_window = image_viewer.Window()
+			print(self.image_window)
 
 	# TODO: double click or right arrow action to go into that dir
 	# TODO: add a left list for parent, right list for child, check if those positions exist first
