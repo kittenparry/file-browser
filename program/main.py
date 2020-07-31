@@ -4,6 +4,7 @@ import mimetypes
 import re
 import string
 import platform
+import traceback
 
 from PySide2.QtWidgets import QApplication, QWidget, QLabel, QListWidget, QListWidgetItem, QHBoxLayout, QVBoxLayout, QGroupBox
 from PySide2.QtGui import QIcon, QImage, QPixmap, QFont
@@ -46,6 +47,7 @@ class Window(QWidget):
 		except Exception as e:
 			self.left_list = self.create_file_list('')
 			print(e)
+			traceback.print_tb(e.__traceback__)
 		self.left_list.setMinimumSize(self.width() / 3, 300)
 		hbox.addWidget(self.left_list)
 
@@ -53,6 +55,7 @@ class Window(QWidget):
 			self.mid_list = self.create_file_list(self.path)
 		except Exception as e:
 			print(e)
+			traceback.print_tb(e.__traceback__)
 		self.mid_list.setMinimumSize(self.width() / 3, 300)
 		hbox.addWidget(self.mid_list)
 
@@ -92,6 +95,8 @@ class Window(QWidget):
 			return
 		
 		# TODO: possibly display preview on one click and open the image in preferred image software on double.
+		# TODO: maybe only proceed to a directory if mimetype guess is None? though suppose it could also display None for no extension files
+		# and inversely may read directories with extension-like names as those type
 		guess = mimetypes.guess_type(item.text())[0]
 		if guess: # if not None, e.g. directory
 			if 'image' in mimetypes.guess_type(item.text())[0]:
@@ -134,6 +139,7 @@ class Window(QWidget):
 				self.create_file_list('', update_list = self.left_list)
 		except Exception as e:
 			print(e)
+			traceback.print_tb(e.__traceback__)
 		self.create_file_list(path, update_list = self.mid_list)
 
 	def create_file_list(self, path, selected = None, up = False, update_list = None):
@@ -159,6 +165,7 @@ class Window(QWidget):
 						icon = QIcon(convert_to_icon(letter))
 					except Exception as e:
 						print(e)
+						traceback.print_tb(e.__traceback__)
 					update_list.addItem(QListWidgetItem(icon, letter))
 			else:
 				update_list.addItem(QListWidgetItem('((root))'))
@@ -189,6 +196,7 @@ class Window(QWidget):
 					icon = QIcon(convert_to_icon(os.path.join(dirpath, files[i])))
 				except Exception as e:
 					print(e)
+					traceback.print_tb(e.__traceback__)
 					icon = QIcon()
 				files[i] = QListWidgetItem(icon, files[i])
 		if len(dirs) > 0:
@@ -199,6 +207,7 @@ class Window(QWidget):
 					icon = QIcon(convert_to_icon(os.path.abspath(os.path.join(dirpath, dirs[i]))))
 				except Exception as e:
 					print(e)
+					traceback.print_tb(e.__traceback__)
 					icon = QIcon()
 				dirs[i] = QListWidgetItem(icon, dirs[i])
 
