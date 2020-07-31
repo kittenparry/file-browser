@@ -6,11 +6,12 @@ import string
 import platform
 import traceback
 
-from PySide2.QtWidgets import QApplication, QWidget, QLabel, QListWidget, QListWidgetItem, QHBoxLayout, QVBoxLayout, QGroupBox
+from PySide2.QtWidgets import QApplication, QWidget, QLabel, QListWidget, QListWidgetItem, QHBoxLayout, QVBoxLayout, QGroupBox, QPushButton
 from PySide2.QtGui import QIcon, QImage, QPixmap, QFont
 from PySide2 import QtCore
 
 from icon import get_icon
+import image_viewer
 
 class Window(QWidget):
 	def __init__(self):
@@ -27,13 +28,27 @@ class Window(QWidget):
 		self.setGeometry(200, 200, 800, 600)
 
 		self.create_layout()
+		self.image_button = QPushButton('image-viewer', self)
+
 		vbox = QVBoxLayout()
 		vbox.addWidget(self.group)
+		vbox.addWidget(self.image_button)
+
+		self.image_window = None
+		self.image_button.clicked.connect(self.launch_image_window)
+
 		self.setLayout(vbox)
 		self.mid_list.setFocus()
 
 		self.show()
 
+	def closeEvent(self, event):
+		'''Additionally close the secondary windows on close.'''
+		try:
+			self.image_window.close()
+		except:
+			pass
+		return super().closeEvent(event)
 
 	def create_layout(self):
 		'''Draw a frame* with current directory on top and 2* lists inside.'''
@@ -243,6 +258,13 @@ class Window(QWidget):
 			s = '...' + s[len(s) - limit:]
 		return s
 
+	def launch_image_window(self):
+		'''Launch secondary image viewing window.'''
+		print(self.image_window)
+		if 'self.image_window' in globals():
+			return
+		self.image_window = image_viewer.Window()
+		print(self.image_window)
 
 	# TODO: double click or right arrow action to go into that dir
 	# TODO: add a left list for parent, right list for child, check if those positions exist first
