@@ -16,6 +16,7 @@ class Window(QWidget):
 		super().__init__()
 
 		self.cached_dirs = []
+		self.path = 'F:\\_patreon\\browser-test'
 		if platform.system() == 'Windows':
 			self.drives = ['%s:\\' % d for d in string.ascii_uppercase if os.path.exists('%s:\\' % d)]
 		else:
@@ -35,17 +36,13 @@ class Window(QWidget):
 
 	def create_layout(self):
 		'''Draw a frame* with current directory on top and 2* lists inside.'''
-		path = 'F:\\_patreon\\browser-test'
-
-		# FIXME: set a max character limit for group text and crop it from left
-		# otherwise it changes the size of the window
-		self.group = QGroupBox(path)
+		self.group = QGroupBox(self.cut_string(self.path))
 		self.group.setFont(QFont('Sanserif', 14))
 
 		hbox = QHBoxLayout()
 
 		try:
-			self.left_list = self.create_file_list(os.path.abspath(os.path.join(path, '..')), os.path.basename(path), True)
+			self.left_list = self.create_file_list(os.path.abspath(os.path.join(self.path, '..')), os.path.basename(self.path), True)
 		except Exception as e:
 			self.left_list = self.create_file_list('')
 			print(e)
@@ -53,7 +50,7 @@ class Window(QWidget):
 		hbox.addWidget(self.left_list)
 
 		try:
-			self.mid_list = self.create_file_list(path)
+			self.mid_list = self.create_file_list(self.path)
 		except Exception as e:
 			print(e)
 		self.mid_list.setMinimumSize(self.width() / 3, 300)
@@ -99,10 +96,10 @@ class Window(QWidget):
 		if guess: # if not None, e.g. directory
 			if 'image' in mimetypes.guess_type(item.text())[0]:
 				if item.listWidget() == self.mid_list:
-					path = self.group.title()
+					path = self.path
 				elif item.listWidget() == self.left_list:
 					# TODO: likely navigate one level above if it's on the left list
-					path = os.path.abspath(os.path.join(self.group.title(), '..'))
+					path = os.path.abspath(os.path.join(self.path, '..'))
 				picture = QPixmap(os.path.join(path, str(item.text())))
 				picture = picture.scaledToWidth(int(self.width() / 3))
 				self.right_panel.setPixmap(picture)
@@ -110,7 +107,7 @@ class Window(QWidget):
 
 		self.right_panel.setPixmap(QPixmap())
 
-		path = self.group.title()
+		path = self.path
 		if item.listWidget() == self.mid_list:
 			path = os.path.join(path, str(item.text()))
 		elif item.listWidget() == self.left_list:
@@ -119,7 +116,8 @@ class Window(QWidget):
 			else:
 				add = str(item.text())
 			path = os.path.abspath(os.path.join(path, '..', add))
-		self.group.setTitle(path)
+		self.path = path
+		self.group.setTitle(self.cut_string(path))
 		self.update_file_lists(path)
 
 	def update_file_lists(self, path):
@@ -168,6 +166,7 @@ class Window(QWidget):
 
 		# cache read contents of path to save some time and processing power?
 		# TODO: could maybe also save actual QListWIdgetItems? to save on Icon creation time
+		# could also copy QIcons to cached_dirs = {... 'dir_icons': [], 'file_icons': []}
 		if not any(c['path'] == path for c in self.cached_dirs):
 			files, dirs, dirpath = get_files(path)
 			cache = {'path': dirpath, 'dirs': dirs.copy(), 'files': files.copy()}
@@ -225,6 +224,15 @@ class Window(QWidget):
 		if update_list:
 			return
 		return file_list
+
+	def cut_string(self, s):
+		'''Cut frame* title string so it fits the window.
+		
+		s -- path string that gets cut and added leading ellipsis'''
+		limit = int(self.width() / 10)
+		if len(s) > limit:
+			s = '...' + s[len(s) - limit:]
+		return s
 
 
 	# TODO: double click or right arrow action to go into that dir
