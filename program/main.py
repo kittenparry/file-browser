@@ -83,14 +83,18 @@ class Window(QWidget):
 		self.right_panel.setPixmap(picture)
 		hbox.addWidget(self.right_panel)
 
-
 		self.left_list.itemDoubleClicked.connect(self.item_click)
 		self.mid_list.itemDoubleClicked.connect(self.item_click)
 
 		self.group.setLayout(hbox)
 
 	def keyPressEvent(self, event):
-		if event.key() == QtCore.Qt.Key_Left:
+		print('key press')
+		# FIXME: doesn't register q key at launch, only works after opening the secondary window
+		if event.key() == QtCore.Qt.Key_Q:
+			print('q press')
+			self.close()
+		elif event.key() == QtCore.Qt.Key_Left:
 			print('left key')
 			# FIXME: requires double left click for whatever reason
 			self.item_click(self.left_list.item(0))
