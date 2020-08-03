@@ -10,7 +10,7 @@ class Window(QWidget):
 
 		self.setWindowTitle('image-viewer')
 		self.setGeometry(200, 200, 800, 600)
-		self.image_path = 'F:\\_patreon\\browser-test\\4.jpg'
+		self.image_path = 'F:\\browser-test\\test-dir\\4.jpg'
 		self.cont_zoomed = None
 
 		self.create_layout()
@@ -60,3 +60,14 @@ class Window(QWidget):
 		vbox.setSpacing(0)
 		vbox.setContentsMargins(0, 0, 0, 0)
 		self.setLayout(vbox)
+
+	def set_image(self, img):
+		'''Change displayed image with the input from the main window.
+		
+		img -- path to image file
+		'''
+		self.image_path = img
+		self.content = QPixmap(self.image_path)
+		self.image.setPixmap(self.content)
+
+		self.label.setText(self.image_path)

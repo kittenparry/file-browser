@@ -18,7 +18,8 @@ class Window(QWidget):
 		super().__init__()
 
 		self.cached_dirs = []
-		self.path = 'F:\\_patreon\\browser-test'
+		self.path = 'F:\\browser-test\\test-dir'
+		self.image_path = ''
 		if platform.system() == 'Windows':
 			self.drives = ['%s:\\' % d for d in string.ascii_uppercase if os.path.exists('%s:\\' % d)]
 		else:
@@ -77,7 +78,7 @@ class Window(QWidget):
 		# FIXME: label's place gets filled by others when in a different window size
 		self.right_panel = QLabel()
 		self.right_panel.setMinimumSize(self.width() / 3, 300)
-		picture = QPixmap('F:\\_patreon\\browser-test\\4.jpg')
+		picture = QPixmap('F:\\browser-test\\test-dir\\4.jpg')
 		# FIXME: reset on resize
 		picture = picture.scaled(int(self.width() / 3), int(self.height() / 3), QtCore.Qt.KeepAspectRatio)
 		self.right_panel.setPixmap(picture)
@@ -120,11 +121,12 @@ class Window(QWidget):
 		if guess: # if not None, e.g. directory
 			if 'image' in mimetypes.guess_type(item.text())[0]:
 				if item.listWidget() == self.mid_list:
-					path = self.path
+					self.image_path = self.path
 				elif item.listWidget() == self.left_list:
 					# TODO: likely navigate one level above if it's on the left list
-					path = os.path.abspath(os.path.join(self.path, '..'))
-				picture = QPixmap(os.path.join(path, str(item.text())))
+					self.image_path = os.path.abspath(os.path.join(self.path, '..'))
+				self.image_path = os.path.join(self.image_path, str(item.text()))
+				picture = QPixmap(self.image_path)
 				picture = picture.scaledToWidth(int(self.width() / 3))
 				self.right_panel.setPixmap(picture)
 				return
@@ -270,6 +272,8 @@ class Window(QWidget):
 		else:
 			self.image_window = image_viewer.Window()
 			print(self.image_window)
+		if self.image_path:
+			self.image_window.set_image(self.image_path)
 
 	# TODO: double click or right arrow action to go into that dir
 	# TODO: add a left list for parent, right list for child, check if those positions exist first
