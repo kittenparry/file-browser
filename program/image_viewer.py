@@ -71,3 +71,8 @@ class Window(QWidget):
 		self.image.setPixmap(self.content)
 
 		self.label.setText(self.image_path)
+
+	def resizeEvent(self, event):
+		# increase image width in scroll area to fit into it
+		self.image.setFixedWidth(self.width() - self.image_scroll.verticalScrollBar().width() - 2)
+		return super().resizeEvent(event)
